@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import importPlugin from 'eslint-plugin-import'
+import pluginQuery from '@tanstack/eslint-plugin-query';
 import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
@@ -16,6 +17,7 @@ export default defineConfig([
       ...tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
+      ...pluginQuery.configs['flat/recommended'],
       prettier,
     ],
     languageOptions: {
@@ -24,6 +26,7 @@ export default defineConfig([
     },
     plugins: {
       import: importPlugin,
+      '@tanstack/query': pluginQuery,
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',

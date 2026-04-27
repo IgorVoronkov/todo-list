@@ -1,11 +1,15 @@
 import { TodoList } from './TodoList';
 
+import { QueryProvider } from '@/providers/QueryProvider';
+
 function App() {
   return (
-    <div>
-      <h1>My Todo App</h1>
-      <TodoList />
-    </div>
+    <QueryProvider>
+      <div>
+        <h1>My Todo App</h1>
+        <TodoList />
+      </div>
+    </QueryProvider>
   );
 }
 
