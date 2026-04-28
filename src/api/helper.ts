@@ -1,35 +1,48 @@
 import { API_BASE_URL } from '@/constants';
 
+class ApiError extends Error {
+  status: number;
+  data: unknown;
+
+  constructor(status: number, data: unknown) {
+    super(`HTTP ${status}`);
+    this.status = status;
+    this.data = data;
+  }
+}
+
 type RequestOptions = Omit<RequestInit, 'body'> & {
-  body?: Record<string, unknown>;
+  body?: unknown;
 };
 
 export async function request<T = unknown>(
   url: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { headers, body, ...rest } = options;
-  const finalHeaders = new Headers(headers);
+  const { headers, body, signal, ...rest } = options;
 
-  if (body) {
+  const finalHeaders = new Headers(headers);
+  let reqBody = body;
+
+  if (body && !(body instanceof FormData)) {
     finalHeaders.set('Content-Type', 'application/json');
+    reqBody = JSON.stringify(body);
   }
 
   const response = await fetch(`${API_BASE_URL}${url}`, {
     headers: finalHeaders,
-    body: body ? JSON.stringify(body) : body,
+    body: reqBody as BodyInit,
+    signal,
     ...rest,
   });
 
-  const text = await response.text();
+  const contentType = response.headers.get('content-type');
+  const isJson = contentType?.includes('application/json');
+  const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${text}`);
+    throw new ApiError(response.status, data);
   }
 
-  if (!text) {
-    return undefined as T;
-  }
-
-  return JSON.parse(text);
+  return data as T;
 }
